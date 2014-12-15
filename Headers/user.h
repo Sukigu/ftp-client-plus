@@ -8,10 +8,10 @@ typedef struct UserSettings {
 
 	// Server Information
 	int port;
-	char** address;
-	
+	char* address;
+
 	// File info.
-	char** path;
+	char* path;
 
 } Settings;
 
