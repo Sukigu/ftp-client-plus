@@ -14,6 +14,3 @@ typedef struct UserSettings {
 	char* path;
 
 } Settings;
-
-
-

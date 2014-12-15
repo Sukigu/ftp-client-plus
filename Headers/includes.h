@@ -13,4 +13,4 @@
 
 // declarations
 
-void fillUserSettings(char* ); 
+void fillUserSettings(char* );
