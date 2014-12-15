@@ -1,1 +1,2 @@
-gcc download.c -o download -Wall
+download: download.c
+	gcc download.c -o download -Wall
