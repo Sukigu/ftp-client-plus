@@ -34,6 +34,8 @@ struct hostent {
         }
 
         printf("Host name  : %s\n", h->h_name);
+        printf("Address Type  : %d\n", h->h_addrtype);
+        printf("Length : %d\n", h->h_length);
         printf("IP Address : %s\n",inet_ntoa(*((struct in_addr *)h->h_addr)));
 
         return 0;
