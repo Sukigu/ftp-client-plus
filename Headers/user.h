@@ -1,5 +1,9 @@
 #include "../Headers/includes.h"
 
+
+/**
+ * Struct to store some user information to be avaiable easily.
+ */
 typedef struct UserSettings {
 
 	// ID information
@@ -8,6 +12,7 @@ typedef struct UserSettings {
 
 	// Server Information
 	int port;
+	char* domain;
 	char* address;
 
 	// File info.
