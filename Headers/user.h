@@ -16,6 +16,7 @@ typedef struct UserSettings {
 	char* address;
 
 	// File info.
+	int pasv_port;
 	char* path;
 
 } Settings;

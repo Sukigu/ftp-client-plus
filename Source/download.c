@@ -1,8 +1,6 @@
 #include "../Headers/includes.h"
 #include "../Headers/user.h"
 
-#define MAX_BUFFER_SIZE 255
-#define MAX_SERVER_RESPONSE_NUMBER_SIZE 4
 
 static Settings *userSet;
 
@@ -116,6 +114,11 @@ void serverConversation(int sockfd){
     }
 }
 
+/**
+ * Try to login in server if needed. If server needs login, and user did not insert data, the function will try a default login.
+ * @param  File descriptor.
+ * @return [VOID]
+ */
 void makeLogin(int sockfd){
 
     if (userSet->username == NULL && userSet->password == NULL)
@@ -171,12 +174,75 @@ void makeLogin(int sockfd){
                 printf("Login wasn't succefully ended! Sorry.\n");
                 exit(9);
             }
+            else {
+                handlingFiles(sockfd);
+            }
         }
         else {
             printf("Sorry. We tried to login but that didn't help. Got your username and password straight and try again.\n");
             exit(8);
         }
     }
+}
+
+
+void handlingFiles(int sockfd){
+    send(sockfd,"pasv\n",5,0);
+    
+    int answerGivenByServer = parsingURLGivenByServer(sockfd);
+
+    if ( answerGivenByServer == TRUE) printf("YAY\n");
+}
+
+/**
+ * Return TRUE if the parsing is done correctly or exit the program if not.. 
+ * @param  File descriptor.
+ * @return [INT] if correct.
+ */
+int parsingURLGivenByServer(int sockfd){
+    int receivedFromServer = -1;
+    char buffer[MAX_BUFFER_SIZE];
+    while(receivedFromServer == -1)
+        receivedFromServer = recv(sockfd,buffer,MAX_BUFFER_SIZE,0);
+    buffer[receivedFromServer] = '\0';
+    printf("Resposta1: %s\n", buffer);
+
+    char temp[255];
+    char AUX[2]; AUX[0] = '(';AUX[1] = ')';
+
+    int i = 0, j = 0, CONTROLO = FALSE;
+    for (; i < strlen(buffer); i++)
+    {
+        if ( buffer[i] == AUX[0]){
+            temp[j++] = buffer[i];
+            CONTROLO = TRUE;
+        }
+        else if (CONTROLO == TRUE){
+            int k = i;
+            for (;k < strlen(buffer); k++)
+            {
+                if (buffer[k] == AUX[1]) {
+                    temp[j++] = buffer[k];
+                    CONTROLO = END_OF_CYCLE;
+                    break;
+                }
+                temp[j++] = buffer[k];
+            }
+            //temp[k] = '\0';
+        }
+        else if (CONTROLO == END_OF_CYCLE) break;
+    }
+    printf("Resposta2: %s\n", temp);
+    // NO NEED TO CHANGE THE CODE BELOW.
+
+    int parsing;
+    // ip_1[3], ip_2[3], ip_3[3], ip_4[3]
+    char ip_1[3], ip_2[3], ip_3[3], ip_4[3], port_1[3], port_2[3];
+    if ((parsing = sscanf(temp, "(%3[^,],%3[^,],%3[^,],%3[^,],%3[^,],%3[^)]", ip_1, ip_2, ip_3, ip_4, port_1, port_2)) != 6){
+        printf("Server is not responding well. Try again again.\n");
+        exit(9);
+    }
+    else return TRUE;
 }
 
 /**
@@ -186,7 +252,7 @@ void makeLogin(int sockfd){
  */
 int responseFromServer(int sockfd) {
     int receivedFromServer = -1;
-    char buffer[255];
+    char buffer[MAX_BUFFER_SIZE];
     while(receivedFromServer == -1)
         receivedFromServer = recv(sockfd,buffer,255,0);
     buffer[receivedFromServer] = '\0';
