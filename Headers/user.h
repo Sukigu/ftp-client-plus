@@ -14,9 +14,11 @@ typedef struct UserSettings {
 	int port;
 	char* domain;
 	char* address;
+	char* path;
 
 	// File info.
 	int pasv_port;
-	char* path;
+	int fileSize;
+	char* filename;
 
 } Settings;

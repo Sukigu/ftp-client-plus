@@ -25,9 +25,10 @@
 // declarations
 
 void fillUserSettings(char* );
-int createConnection();
+int createConnection(int);
 void serverConversation(int );
 void makeLogin(int );
 void handlingFiles(int );
+void get_file_name_from_path();
 int parsingURLGivenByServer(int );
-int responseFromServer(int );
+int responseFromServer(int, int);
