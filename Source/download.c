@@ -44,7 +44,7 @@ void fillUserSettings(char* url){
     int i;
     char username[MAX_BUFFER_SIZE], password[MAX_BUFFER_SIZE], host[MAX_BUFFER_SIZE],path[MAX_BUFFER_SIZE];
 
-    if ((i = sscanf(url, "ftp://%255[^:]:%255[^@]@%255[^/]/%s",username,password,host,path)) != 4 && (i = sscanf(url, "ftp://%255[^/]/%255[^/]/",host,path)) != 2){
+    if ((i = sscanf(url, "ftp://%255[^:]:%255[^@]@%255[^/]/%s",username,password,host,path)) != 4 && (i = sscanf(url, "ftp://%255[^/]/%s",host,path)) != 2){
         printf("\nERROR: The url you entered is not acceptable.\n");
         exit(2);
     }
@@ -59,12 +59,15 @@ void fillUserSettings(char* url){
     if(i == 4){
         strcpy(userSet->username,username);
         strcpy(userSet->password,password);
-        userSet->port = 21;
     }
-
+    else {
+        strcpy(userSet->username,"anonymous");
+        strcpy(userSet->password,"-12345");
+    }
+    userSet->port = 21;
     strcpy(userSet->path, path);
     strcpy(userSet->address,inet_ntoa(*((struct in_addr *)h->h_addr)));
-
+    printf("%s\n",userSet->path);
     //printf("%s\n%s\n%s\n%s\n%d", userSet->username, userSet->password, userSet->path, userSet->address,userSet->port);
 }
 
@@ -122,37 +125,6 @@ void serverConversation(int sockfd){
  */
 void makeLogin(int sockfd){
 
-    if (userSet->username == NULL && userSet->password == NULL)
-    {
-        printf("The FTP server needs login! We'll trying to get you in anonymous account\n");
-
-        char* login = "user anonymous";
-        char* incomplete_pwd = "pass anonymous@";
-
-        size_t pwdSize = strlen(incomplete_pwd) + strlen(userSet->domain) + 1; // '+1' for the null terminator
-        char complete[pwdSize];
-        strcpy(complete, login);
-        strcat(complete, userSet->domain);
-
-        // Send username and wait for response.
-        send(sockfd, login, strlen(login),0);
-        int response = responseFromServer(sockfd, FALSE);
-
-        if (response == 331)
-        {
-            send(sockfd, complete, strlen(complete),0);
-            response = responseFromServer(sockfd, FALSE);
-
-            if (response != 230){
-                printf("\nLogin wasn't succefully ended! Sorry.\n");
-                exit(9);
-            }
-        }
-        else {
-            printf("Sorry. We tried to login but that didn't help. Got your username and password and try again.\n");
-            exit(8);
-        }
-    }else {
         // Send username and wait for response.
         char usernameCompleted[MAX_BUFFER_SIZE];
         strcpy(usernameCompleted,"user ");
@@ -176,7 +148,7 @@ void makeLogin(int sockfd){
                 exit(9);
             }
             else {
-                printf("STARTING NOW THE TRANFER OF FILE(S).\n");
+                printf("STARTING NOW THE TRANSFER OF FILE(S).\n");
                 handlingFiles(sockfd);
             }
         }
@@ -184,7 +156,6 @@ void makeLogin(int sockfd){
             printf("Sorry. We tried to login but that didn't help. Got your username and password straight and try again.\n");
             exit(8);
         }
-    }
 }
 
 void handlingFiles(int sockfd){
@@ -193,7 +164,6 @@ void handlingFiles(int sockfd){
 
     if ( answerGivenByServer == TRUE) {
         int newSockFD = createConnection(userSet->pasv_port);
-        printf("%s\n", userSet->path);
         char command[MAX_BUFFER_SIZE];
         strcpy(command,"retr ");
         strcat(command,userSet->path);
@@ -201,16 +171,15 @@ void handlingFiles(int sockfd){
 
         send(sockfd,command,strlen(command),0);
         answerGivenByServer = responseFromServer(sockfd,TRUE);
-        printf("Resposta %d\n", answerGivenByServer);
+        printf("Resposta: %d\n", answerGivenByServer);
         if (answerGivenByServer == 150)
         {
             get_file_name_from_path();
-            
+
             FILE* wantedFile;// = fopen(userSet->filename, "W");
             wantedFile = fopen (userSet->filename, "wb");
-
-            int controlo = -1;
             char buffer[userSet->fileSize];
+            int controlo = -1;
 
             int bytes_already_written = 0;
             while( userSet->fileSize - bytes_already_written > 0){
@@ -218,7 +187,7 @@ void handlingFiles(int sockfd){
                     controlo = recv(newSockFD,buffer,userSet->fileSize,0);
                 if(controlo != -1){
                     fwrite (buffer , sizeof(char), sizeof(buffer), wantedFile);
-                    bytes_already_written = strlen(buffer);
+                    bytes_already_written += strlen(buffer);
                 }
             }
             fclose(wantedFile);
