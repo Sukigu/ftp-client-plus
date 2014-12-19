@@ -19,8 +19,8 @@
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <strings.h>
 #include <unistd.h>
+#include <string.h>
 
 // declarations
 
@@ -32,3 +32,4 @@ void handlingFiles(int );
 void get_file_name_from_path();
 int parsingURLGivenByServer(int );
 int responseFromServer(int, int);
+void clearScreen();
