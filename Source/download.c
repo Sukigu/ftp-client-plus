@@ -1,5 +1,4 @@
 #include "../Headers/includes.h"
-#include "../Headers/user.h"
 
 typedef struct UserSettings {
 
